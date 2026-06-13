@@ -177,7 +177,7 @@
     </button>
   </div>
   <p class="tip">Hold to climb, release to sink. Fly low — the spray's heaviest on the deck.</p>
-  <p>Clear each field's acres. Mind fences, lines, trees, cattle, deer &amp; birds. Grab tokens for power-ups. 3 lives — long unbroken swaths multiply your score.</p>
+  <p>Clear each field's acres. Mind fences, lines, trees, ranch houses, cattle, deer &amp; birds. Grab tokens for power-ups. 3 lives — long unbroken swaths multiply your score.</p>
 </div>
 
 <div id="endScreen" class="overlay hidden">
@@ -423,15 +423,17 @@ function terrainYatWorldX(wx) {
 
 function spawnObstacleAhead(wx) {
   const roll = Math.random();
-  if (roll < 0.30) {
+  if (roll < 0.28) {
     obstacles.push({ type: 'fence', worldX: wx, hit: false });
-  } else if (roll < 0.58) {
+  } else if (roll < 0.52) {
     obstacles.push({ type: 'powerline', worldX: wx, hit: false, height: 90 + Math.random()*30 });
-  } else if (roll < 0.78) {
+  } else if (roll < 0.70) {
     obstacles.push({ type: 'transmission', worldX: wx, hit: false, height: Math.min(190 + Math.random()*40, world.groundY - 90) });
-  } else if (roll < 0.89) {
+  } else if (roll < 0.80) {
     obstacles.push({ type: 'tree', worldX: wx, hit: false });
-  } else if (roll < 0.96) {
+  } else if (roll < 0.88) {
+    obstacles.push({ type: 'house', worldX: wx, hit: false });
+  } else if (roll < 0.95) {
     critters.push({ type: Math.random() < 0.5 ? 'deer' : 'cow', worldX: wx, hit: false, popT: 0 });
   } else {
     // Rare bird up in the sky — fly UNDER it.
@@ -695,6 +697,10 @@ function update(dt) {
     } else if (o.type === 'tree') {
       if (Math.abs(sx - px) < 30 && plane.y > oGround - 80) {
         o.hit = true; if (!consumeShield()) { endRun('You hit a tree.'); return; }
+      }
+    } else if (o.type === 'house') {
+      if (Math.abs(sx - px) < 40 && plane.y > oGround - 72) {
+        o.hit = true; if (!consumeShield()) { endRun('You hit Drummond Ranch!'); return; }
       }
     } else if (o.type === 'bird') {
       if (Math.abs(sx - px) < 22 && Math.abs(plane.y - o.y) < 18) {
@@ -1158,6 +1164,40 @@ function draw() {
       ctx.ellipse(sx, o.y, 3, 2.5, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.lineCap = 'butt';
+    } else if (o.type === 'house') {
+      const hw = 38, bodyH = 50, roofH = 26;
+      const topBody = gy - bodyH, roofPeak = gy - bodyH - roofH;
+      // walls
+      ctx.fillStyle = '#e8d9b0'; ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.rect(sx - hw, topBody, hw * 2, bodyH); ctx.fill(); ctx.stroke();
+      // roof
+      ctx.fillStyle = '#8a3b2e';
+      ctx.beginPath(); ctx.moveTo(sx - hw - 9, topBody); ctx.lineTo(sx, roofPeak); ctx.lineTo(sx + hw + 9, topBody); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // chimney
+      ctx.fillStyle = '#6b4a2a';
+      ctx.beginPath(); ctx.rect(sx + 16, roofPeak + 10, 9, 18); ctx.fill(); ctx.stroke();
+      // door
+      ctx.fillStyle = '#5a3a1f';
+      ctx.beginPath(); ctx.rect(sx - 9, gy - 26, 18, 26); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffd166'; ctx.beginPath(); ctx.arc(sx + 4, gy - 13, 1.8, 0, Math.PI * 2); ctx.fill();
+      // windows
+      ctx.fillStyle = '#bfe8ff'; ctx.strokeStyle = '#1f2937';
+      ctx.beginPath(); ctx.rect(sx - 30, topBody + 9, 14, 14); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.rect(sx + 16, topBody + 9, 14, 14); ctx.fill(); ctx.stroke();
+      // name sign bubble under the house
+      ctx.font = 'bold 15px Courier New, monospace';
+      const label = 'DRUMMOND RANCH';
+      const bw = ctx.measureText(label).width + 22, bh = 26;
+      const bx = sx - bw / 2, by = gy + 9;
+      ctx.fillStyle = '#fff7e0'; ctx.strokeStyle = '#1f2937'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 7); ctx.fill(); ctx.stroke();
+      // little tab pointing up to the house
+      ctx.beginPath(); ctx.moveTo(sx - 7, by + 1); ctx.lineTo(sx, by - 7); ctx.lineTo(sx + 7, by + 1); ctx.closePath();
+      ctx.fillStyle = '#fff7e0'; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1f2937'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, sx, by + bh / 2 + 1);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     }
   }
 
