@@ -115,6 +115,31 @@
     0%, 100% { transform: rotate(-3deg); }
     50% { transform: rotate(3deg); }
   }
+  .chooser {
+    display: flex;
+    gap: 4vmin;
+    margin: 10px 0 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .vbtn {
+    background: rgba(255,255,255,0.08);
+    border: 2px solid #88aacc;
+    border-radius: 16px;
+    padding: 12px 20px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 3vmin;
+    letter-spacing: 0.08em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .vbtn:active { background: rgba(255,255,255,0.22); border-color: #ffd166; }
+  .vbtn svg { width: 30vmin; max-width: 180px; height: auto; }
   .hidden { display: none !important; }
 </style>
 </head>
@@ -123,37 +148,36 @@
 
 <div id="startScreen" class="overlay">
   <h1>DOWN ON THE DECK</h1>
-  <h2>AT-402 — FIELD 1</h2>
-  <svg class="planeArt" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="160" cy="166" rx="92" ry="8" fill="#000" opacity="0.18"/>
-    <!-- tail -->
-    <path d="M64 96 L40 54 L70 60 L92 96 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
-    <path d="M58 100 L30 98 L34 108 L72 108 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
-    <!-- fuselage -->
-    <path d="M64 92 Q96 66 168 66 Q232 66 270 92 L286 102 Q278 116 270 110 Q232 122 168 122 Q96 122 64 104 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
-    <path d="M270 92 Q292 96 292 102 Q292 110 270 110 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5"/>
-    <path d="M80 110 Q170 118 268 110 L268 116 Q170 124 82 116 Z" fill="#f4c430"/>
-    <!-- canopy + happy face -->
-    <path d="M150 68 Q150 42 182 42 Q210 42 210 68 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3.5"/>
-    <circle cx="170" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
-    <circle cx="194" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
-    <circle cx="172" cy="59" r="3.2" fill="#1f2937"/><circle cx="196" cy="59" r="3.2" fill="#1f2937"/>
-    <path d="M226 98 Q242 112 258 100" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
-    <!-- wing -->
-    <path d="M110 112 L86 132 L188 132 L226 120 L150 110 Z" fill="#e8b81f" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
-    <!-- gear -->
-    <line x1="150" y1="128" x2="150" y2="150" stroke="#1f2937" stroke-width="4"/>
-    <circle cx="150" cy="154" r="9" fill="#2b2b2b" stroke="#1f2937" stroke-width="2"/><circle cx="150" cy="154" r="3" fill="#888"/>
-    <!-- spinner + prop -->
-    <circle cx="290" cy="101" r="5" fill="#cc2a2a"/>
-    <line x1="298" y1="74" x2="298" y2="130" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
-  </svg>
-  <p class="tip">HOLD anywhere to climb. RELEASE to sink down on the crop.</p>
-  <p>Stay low for points. The spray turns on automatically when you are over the crop.</p>
-  <p>Pull up over fences, trees, and power lines. On the tall highlines you can duck under the wires or climb over. Watch for cattle, deer, and the odd bird overhead. Don't crash.</p>
-  <p>Grab glowing tokens for bonus points and power-ups: shield, spray boost, 2x score.</p>
-  <p>Spray your acres to clear each field — Field 1 needs 10, every field after is bigger. Fly low for heavier spray and more points. Long unbroken swaths multiply your score. You get 3 lives — crash and you retry the same field.</p>
-  <p class="big">TAP TO FLY</p>
+  <h2>CHOOSE YOUR RIDE</h2>
+  <div class="chooser">
+    <button id="btnPlane" class="vbtn">
+      <svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+        <path d="M30 36 L14 22 L26 26 L40 34 Z" fill="#f4c430" stroke="#1f2937" stroke-width="2"/>
+        <path d="M24 34 Q40 22 70 22 Q92 22 104 34 L110 40 Q104 48 70 48 Q40 48 24 40 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="2.5"/>
+        <path d="M62 22 Q62 12 76 12 Q88 12 88 22 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="2"/>
+        <path d="M40 44 L30 54 L80 54 L96 46 Z" fill="#f4c430" stroke="#1f2937" stroke-width="2.5"/>
+        <circle cx="100" cy="36" r="3" fill="#cc2a2a"/>
+        <line x1="112" y1="26" x2="112" y2="50" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <span>AIRPLANE</span>
+    </button>
+    <button id="btnHeli" class="vbtn">
+      <svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+        <path d="M58 36 L16 30 L16 38 L58 44 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="2"/>
+        <path d="M16 30 L6 18 L18 36 Z" fill="#f4c430" stroke="#1f2937" stroke-width="2"/>
+        <path d="M58 26 Q58 18 76 18 Q98 18 104 34 Q104 44 86 46 Q60 46 58 36 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="2.5"/>
+        <path d="M88 22 Q104 24 104 34 Q104 40 92 40 Q86 30 88 22 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="2"/>
+        <line x1="76" y1="18" x2="76" y2="10" stroke="#1f2937" stroke-width="2.5"/>
+        <line x1="30" y1="8" x2="116" y2="8" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+        <line x1="62" y1="50" x2="100" y2="50" stroke="#1f2937" stroke-width="2.5"/>
+        <line x1="74" y1="44" x2="72" y2="50" stroke="#1f2937" stroke-width="2.5"/>
+        <line x1="92" y1="44" x2="94" y2="50" stroke="#1f2937" stroke-width="2.5"/>
+      </svg>
+      <span>HELICOPTER</span>
+    </button>
+  </div>
+  <p class="tip">Hold to climb, release to sink. Fly low — the spray's heaviest on the deck.</p>
+  <p>Clear each field's acres. Mind fences, lines, trees, cattle, deer &amp; birds. Grab tokens for power-ups. 3 lives — long unbroken swaths multiply your score.</p>
 </div>
 
 <div id="endScreen" class="overlay hidden">
@@ -202,6 +226,45 @@
       <path d="M298 74 Q308 102 296 130" fill="none" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
     </g>
   </svg>
+  <svg id="artHeliHappy" class="planeArt hidden" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="160" cy="158" rx="92" ry="8" fill="#000" opacity="0.18"/>
+    <path d="M150 96 L40 86 L40 100 L150 110 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M40 86 L18 60 L44 96 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <line x1="22" y1="52" x2="22" y2="92" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/>
+    <path d="M150 70 Q150 56 180 56 Q250 56 280 84 Q292 96 280 110 Q250 124 180 124 Q150 124 150 96 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M150 104 Q210 112 286 100 L286 110 Q210 120 152 112 Z" fill="#f4c430"/>
+    <path d="M236 64 Q284 64 286 92 Q286 104 262 106 Q240 84 236 64 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3"/>
+    <circle cx="252" cy="80" r="6" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="270" cy="82" r="6" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="253" cy="81" r="3" fill="#1f2937"/><circle cx="271" cy="83" r="3" fill="#1f2937"/>
+    <line x1="190" y1="56" x2="190" y2="38" stroke="#1f2937" stroke-width="5"/>
+    <circle cx="190" cy="36" r="5" fill="#2b2b2b"/>
+    <line x1="70" y1="34" x2="300" y2="34" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
+    <line x1="160" y1="140" x2="250" y2="140" stroke="#1f2937" stroke-width="4"/>
+    <line x1="180" y1="124" x2="176" y2="140" stroke="#1f2937" stroke-width="4"/>
+    <line x1="232" y1="124" x2="236" y2="140" stroke="#1f2937" stroke-width="4"/>
+  </svg>
+  <svg id="artHeliCrash" class="planeArt hidden" viewBox="0 0 320 185" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#9a9a9a" opacity="0.8"><circle cx="270" cy="44" r="9"/><circle cx="284" cy="34" r="6.5"/><circle cx="258" cy="34" r="6"/></g>
+    <g transform="rotate(12 160 100)">
+      <ellipse cx="160" cy="160" rx="90" ry="8" fill="#000" opacity="0.15"/>
+      <path d="M150 96 L40 86 L40 100 L150 110 Z" fill="#efe6c8" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M40 86 L18 60 L44 96 Z" fill="#d9a520" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+      <line x1="22" y1="52" x2="22" y2="92" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/>
+      <path d="M150 70 Q150 56 180 56 Q250 56 280 84 Q292 96 280 110 Q250 124 180 124 Q150 124 150 96 Z" fill="#efe6c8" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M236 64 Q284 64 286 92 Q286 104 262 106 Q240 84 236 64 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3"/>
+      <g stroke="#1f2937" stroke-width="3" stroke-linecap="round">
+        <line x1="247" y1="74" x2="257" y2="84"/><line x1="257" y1="74" x2="247" y2="84"/>
+        <line x1="266" y1="76" x2="276" y2="86"/><line x1="276" y1="76" x2="266" y2="86"/>
+      </g>
+      <line x1="190" y1="56" x2="190" y2="38" stroke="#1f2937" stroke-width="5"/>
+      <circle cx="190" cy="36" r="5" fill="#2b2b2b"/>
+      <path d="M80 40 Q190 26 300 44" fill="none" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
+      <line x1="160" y1="140" x2="250" y2="140" stroke="#1f2937" stroke-width="4"/>
+      <line x1="180" y1="124" x2="176" y2="140" stroke="#1f2937" stroke-width="4"/>
+      <line x1="232" y1="124" x2="240" y2="140" stroke="#1f2937" stroke-width="4"/>
+    </g>
+  </svg>
   <div id="endStats"></div>
   <p id="endPrompt" class="big">TAP TO FLY AGAIN</p>
 </div>
@@ -221,7 +284,12 @@ const endStatsEl = document.getElementById('endStats');
 const endPromptEl = document.getElementById('endPrompt');
 const artHappy = document.getElementById('artHappy');
 const artCrash = document.getElementById('artCrash');
+const artHeliHappy = document.getElementById('artHeliHappy');
+const artHeliCrash = document.getElementById('artHeliCrash');
+const btnPlane = document.getElementById('btnPlane');
+const btnHeli = document.getElementById('btnHeli');
 let runScoreEl = null, runTotalEl = null;
+let vehicle = 'plane';   // 'plane' or 'heli'
 
 let W = window.innerWidth;
 let H = window.innerHeight;
@@ -466,12 +534,13 @@ function press(e) {
     endScreen.classList.add('hidden');
     if (lastResult === 'level') {
       level += 1;                                   // next field, bigger goal
+      resetGame();
     } else if (lastResult === 'retry') {
-      /* same field again — lives already spent, banked total kept */
+      resetGame();                                  // same field, lives already spent
     } else {
-      level = 1; totalScore = 0; lives = MAX_LIVES; // game over — start fresh
+      state = STATE.START;                          // game over — back to ride chooser
+      startScreen.classList.remove('hidden');
     }
-    resetGame();
     return;
   }
   if (state === STATE.TURN) return;   // ignore taps during the auto spray-turn
@@ -490,9 +559,19 @@ canvas.addEventListener('touchcancel', release, { passive: false });
 canvas.addEventListener('mousedown', press);
 canvas.addEventListener('mouseup', release);
 canvas.addEventListener('mouseleave', release);
-// Tap start screen too
-startScreen.addEventListener('touchstart', press, { passive: false });
-startScreen.addEventListener('mousedown', press);
+// Ride chooser buttons start the game
+function choose(v, e) {
+  if (e) { e.preventDefault(); e.stopPropagation(); }
+  vehicle = v;
+  startScreen.classList.add('hidden');
+  level = 1; totalScore = 0; lives = MAX_LIVES;
+  resetGame();
+}
+btnPlane.addEventListener('click', e => choose('plane', e));
+btnHeli.addEventListener('click', e => choose('heli', e));
+btnPlane.addEventListener('touchstart', e => choose('plane', e), { passive: false });
+btnHeli.addEventListener('touchstart', e => choose('heli', e), { passive: false });
+// Tapping the end screen advances
 endScreen.addEventListener('touchstart', press, { passive: false });
 endScreen.addEventListener('mousedown', press);
 // Spacebar for desktop
@@ -770,6 +849,12 @@ function updateTurn(dt) {
   if (p >= 1) completeLevel();
 }
 
+function showEndArt(win) {
+  [artHappy, artCrash, artHeliHappy, artHeliCrash].forEach(a => a.classList.add('hidden'));
+  if (vehicle === 'heli') (win ? artHeliHappy : artHeliCrash).classList.remove('hidden');
+  else (win ? artHappy : artCrash).classList.remove('hidden');
+}
+
 function revealRow(id, after) {
   if (cardT >= after) { const el = document.getElementById(id); if (el) el.classList.remove('hiddenrow'); }
 }
@@ -797,8 +882,7 @@ function completeLevel() {
   endTitle.textContent = 'FIELD ' + level + ' COMPLETE';
   rewardMsgEl.textContent = reward;
   crashCauseEl.textContent = '';
-  artHappy.classList.remove('hidden');
-  artCrash.classList.add('hidden');
+  showEndArt(true);
   endStatsEl.innerHTML =
     '<p id="rowAcres" class="hiddenrow">Acres sprayed: ' + Math.floor(acresClean) + ' / ' + acresTarget + '</p>' +
     '<p id="rowBase" class="hiddenrow">Base score: ' + base + '</p>' +
@@ -845,8 +929,7 @@ function endRun(cause) {
   state = STATE.END;
   rewardMsgEl.textContent = '';
   crashCauseEl.textContent = cause || '';
-  artHappy.classList.add('hidden');
-  artCrash.classList.remove('hidden');
+  showEndArt(false);
   if (lives > 0) {
     endTitle.textContent = 'CRASH!';
     endStatsEl.innerHTML =
@@ -1208,8 +1291,8 @@ function draw() {
     drawCollectible(csx, by, c.type);
   }
 
-  // Plane
-  drawPlane(plane.x, plane.y, plane.rot, planeFlip);
+  // Player vehicle
+  (vehicle === 'heli' ? drawHeli : drawPlane)(plane.x, plane.y, plane.rot, planeFlip);
 
   // HUD
   drawHUD();
@@ -1403,6 +1486,81 @@ function drawPlane(x, y, rot, flip) {
   ctx.beginPath();
   ctx.arc(12, 19, 3.5, 0, Math.PI*2);
   ctx.fill(); ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawHeli(x, y, rot, flip) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (flip) ctx.scale(-1, 1);
+  ctx.rotate(rot);
+
+  const YEL = '#f4c430', CREAM = '#fff7e0', LINE = '#222', BLUE = '#bfe8ff';
+
+  // shadow
+  ctx.save();
+  ctx.globalAlpha = 0.22; ctx.fillStyle = '#000';
+  const groundY = terrainYatWorldX(world.scroll + x) - y;
+  ctx.beginPath(); ctx.ellipse(0, groundY - 3, 32, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // tail boom
+  ctx.fillStyle = CREAM; ctx.strokeStyle = LINE; ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(-6, -2); ctx.lineTo(-40, -6); ctx.lineTo(-40, -1); ctx.lineTo(-6, 4); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // tail fin
+  ctx.fillStyle = YEL;
+  ctx.beginPath(); ctx.moveTo(-40, -6); ctx.lineTo(-48, -16); ctx.lineTo(-38, -2); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // tail rotor (spin blur)
+  ctx.strokeStyle = 'rgba(40,40,40,0.6)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(-46, -13); ctx.lineTo(-46, 3); ctx.stroke();
+
+  // cabin body
+  ctx.fillStyle = CREAM; ctx.strokeStyle = LINE; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(-8, -6);
+  ctx.quadraticCurveTo(-12, 8, 6, 10);
+  ctx.lineTo(20, 10);
+  ctx.quadraticCurveTo(34, 8, 34, -2);
+  ctx.quadraticCurveTo(34, -14, 14, -14);
+  ctx.quadraticCurveTo(-2, -14, -8, -6);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // yellow band
+  ctx.fillStyle = YEL;
+  ctx.beginPath(); ctx.moveTo(-8, 2); ctx.quadraticCurveTo(12, 6, 32, 1); ctx.lineTo(32, 5); ctx.quadraticCurveTo(12, 9, -7, 5); ctx.closePath(); ctx.fill();
+  // cockpit bubble
+  ctx.fillStyle = BLUE; ctx.strokeStyle = LINE; ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(18, -12); ctx.quadraticCurveTo(33, -11, 33, -2); ctx.quadraticCurveTo(33, 3, 24, 3); ctx.quadraticCurveTo(18, -4, 18, -12); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // mast + hub
+  ctx.strokeStyle = LINE; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(6, -14); ctx.lineTo(6, -23); ctx.stroke();
+  ctx.fillStyle = '#333'; ctx.beginPath(); ctx.ellipse(6, -24, 3, 3, 0, 0, Math.PI * 2); ctx.fill();
+  // main rotor disc (wide spin blur)
+  ctx.strokeStyle = 'rgba(40,40,40,0.55)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(-36, -25); ctx.lineTo(50, -25); ctx.stroke();
+  ctx.save(); ctx.globalAlpha = 0.14; ctx.fillStyle = '#333';
+  ctx.beginPath(); ctx.ellipse(6, -25, 44, 3, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+
+  // skids
+  ctx.strokeStyle = LINE; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-6, 18); ctx.lineTo(28, 18);
+  ctx.moveTo(2, 10); ctx.lineTo(0, 18);
+  ctx.moveTo(20, 10); ctx.lineTo(22, 18);
+  ctx.stroke();
+
+  // spray boom + nozzles
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1.3;
+  ctx.beginPath(); ctx.moveTo(-8, 14); ctx.lineTo(30, 14); ctx.stroke();
+  ctx.lineWidth = 1;
+  for (let nx = -4; nx <= 28; nx += 7) { ctx.beginPath(); ctx.moveTo(nx, 14); ctx.lineTo(nx, 17); ctx.stroke(); }
 
   ctx.restore();
 }
