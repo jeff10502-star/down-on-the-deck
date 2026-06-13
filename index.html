@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1a2438">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Down on the Deck</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+  #game {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+  }
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.78);
+    z-index: 10;
+    pointer-events: auto;
+    text-align: center;
+    padding: 20px;
+  }
+  .overlay h1 {
+    font-size: 8vmin;
+    letter-spacing: 0.2em;
+    color: #ffd166;
+    text-shadow: 0 0 24px rgba(255,209,102,0.4);
+    margin-bottom: 12px;
+  }
+  .overlay h2 {
+    font-size: 4vmin;
+    color: #88aacc;
+    letter-spacing: 0.3em;
+    margin-bottom: 28px;
+  }
+  .overlay p {
+    font-size: 3.2vmin;
+    color: #ddd;
+    margin: 4px 0;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+  .overlay .tip {
+    color: #aeefff;
+  }
+  .overlay .cause {
+    color: #ff6b5a;
+    font-size: 4vmin;
+    margin: 0 0 14px;
+  }
+  .overlay .reward {
+    font-size: 5.5vmin;
+    color: #4caf50;
+    letter-spacing: 0.04em;
+    margin: 2px 0 6px;
+    text-shadow: 0 0 18px rgba(76,175,80,0.45);
+  }
+  #endStats p { margin: 5px 0; transition: opacity 0.4s ease, transform 0.4s ease; }
+  #endStats b { color: #ffd166; }
+  #endStats .hiddenrow { opacity: 0; transform: translateY(8px); }
+  .overlay .big {
+    font-size: 5vmin;
+    color: #4caf50;
+    margin-top: 24px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .score-line {
+    color: #ffd166 !important;
+    font-size: 5vmin !important;
+    margin: 8px 0 !important;
+  }
+  .planeArt {
+    width: 48vmin;
+    max-width: 320px;
+    height: auto;
+    margin: 4px auto 14px;
+    display: block;
+  }
+  #startScreen .planeArt { animation: bob 2.4s ease-in-out infinite; }
+  #endScreen .planeArt { animation: wobble 1.6s ease-in-out infinite; }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+  @keyframes wobble {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+  }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="startScreen" class="overlay">
+  <h1>DOWN ON THE DECK</h1>
+  <h2>AT-402 — FIELD 1</h2>
+  <svg class="planeArt" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="160" cy="166" rx="92" ry="8" fill="#000" opacity="0.18"/>
+    <!-- tail -->
+    <path d="M64 96 L40 54 L70 60 L92 96 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M58 100 L30 98 L34 108 L72 108 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <!-- fuselage -->
+    <path d="M64 92 Q96 66 168 66 Q232 66 270 92 L286 102 Q278 116 270 110 Q232 122 168 122 Q96 122 64 104 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M270 92 Q292 96 292 102 Q292 110 270 110 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5"/>
+    <path d="M80 110 Q170 118 268 110 L268 116 Q170 124 82 116 Z" fill="#f4c430"/>
+    <!-- canopy + happy face -->
+    <path d="M150 68 Q150 42 182 42 Q210 42 210 68 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3.5"/>
+    <circle cx="170" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="194" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="172" cy="59" r="3.2" fill="#1f2937"/><circle cx="196" cy="59" r="3.2" fill="#1f2937"/>
+    <path d="M226 98 Q242 112 258 100" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+    <!-- wing -->
+    <path d="M110 112 L86 132 L188 132 L226 120 L150 110 Z" fill="#e8b81f" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+    <!-- gear -->
+    <line x1="150" y1="128" x2="150" y2="150" stroke="#1f2937" stroke-width="4"/>
+    <circle cx="150" cy="154" r="9" fill="#2b2b2b" stroke="#1f2937" stroke-width="2"/><circle cx="150" cy="154" r="3" fill="#888"/>
+    <!-- spinner + prop -->
+    <circle cx="290" cy="101" r="5" fill="#cc2a2a"/>
+    <line x1="298" y1="74" x2="298" y2="130" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <p class="tip">HOLD anywhere to climb. RELEASE to sink down on the crop.</p>
+  <p>Stay low for points. The spray turns on automatically when you are over the crop.</p>
+  <p>Pull up over fences, trees, and power lines. On the tall highlines you can duck under the wires or climb over. Watch for cattle, deer, and the odd bird overhead. Don't crash.</p>
+  <p>Grab glowing tokens for bonus points and power-ups: shield, spray boost, 2x score.</p>
+  <p>Spray your acres to clear each field — Field 1 needs 10, every field after is bigger. Fly low for heavier spray and more points. Long unbroken swaths multiply your score. You get 3 lives — crash and you retry the same field.</p>
+  <p class="big">TAP TO FLY</p>
+</div>
+
+<div id="endScreen" class="overlay hidden">
+  <h1 id="endTitle">FIELD CLEARED</h1>
+  <p id="rewardMsg" class="reward"></p>
+  <p id="crashCause" class="cause"></p>
+  <svg id="artHappy" class="planeArt hidden" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="160" cy="166" rx="92" ry="8" fill="#000" opacity="0.18"/>
+    <path d="M64 96 L40 54 L70 60 L92 96 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M58 100 L30 98 L34 108 L72 108 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M64 92 Q96 66 168 66 Q232 66 270 92 L286 102 Q278 116 270 110 Q232 122 168 122 Q96 122 64 104 Z" fill="#fff7e0" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M270 92 Q292 96 292 102 Q292 110 270 110 Z" fill="#f4c430" stroke="#1f2937" stroke-width="3.5"/>
+    <path d="M80 110 Q170 118 268 110 L268 116 Q170 124 82 116 Z" fill="#f4c430"/>
+    <path d="M150 68 Q150 42 182 42 Q210 42 210 68 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3.5"/>
+    <circle cx="170" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="194" cy="58" r="6.5" fill="#fff" stroke="#1f2937" stroke-width="2"/>
+    <circle cx="172" cy="59" r="3.2" fill="#1f2937"/><circle cx="196" cy="59" r="3.2" fill="#1f2937"/>
+    <path d="M226 98 Q242 112 258 100" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+    <path d="M110 112 L86 132 L188 132 L226 120 L150 110 Z" fill="#e8b81f" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+    <line x1="150" y1="128" x2="150" y2="150" stroke="#1f2937" stroke-width="4"/>
+    <circle cx="150" cy="154" r="9" fill="#2b2b2b" stroke="#1f2937" stroke-width="2"/><circle cx="150" cy="154" r="3" fill="#888"/>
+    <circle cx="290" cy="101" r="5" fill="#cc2a2a"/>
+    <line x1="298" y1="74" x2="298" y2="130" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
+  </svg>
+  <svg id="artCrash" class="planeArt" viewBox="0 0 320 185" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#9a9a9a" opacity="0.8">
+      <circle cx="300" cy="58" r="9"/><circle cx="314" cy="48" r="6.5"/><circle cx="290" cy="46" r="6"/>
+    </g>
+    <g transform="rotate(13 160 108)">
+      <ellipse cx="160" cy="168" rx="90" ry="8" fill="#000" opacity="0.15"/>
+      <path d="M64 96 L40 54 L70 60 L92 96 Z" fill="#d9a520" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M58 100 L30 98 L34 108 L72 108 Z" fill="#d9a520" stroke="#1f2937" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M64 92 Q96 66 168 66 Q232 66 270 92 L286 102 Q278 116 270 110 Q232 122 168 122 Q96 122 64 104 Z" fill="#efe6c8" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M270 92 Q292 96 292 102 Q292 110 270 110 Z" fill="#d9a520" stroke="#1f2937" stroke-width="3.5"/>
+      <path d="M80 110 Q170 118 268 110 L268 116 Q170 124 82 116 Z" fill="#d9a520"/>
+      <path d="M150 68 Q150 42 182 42 Q210 42 210 68 Z" fill="#bfe8ff" stroke="#1f2937" stroke-width="3.5"/>
+      <g stroke="#1f2937" stroke-width="3" stroke-linecap="round">
+        <line x1="166" y1="52" x2="177" y2="63"/><line x1="177" y1="52" x2="166" y2="63"/>
+        <line x1="189" y1="52" x2="200" y2="63"/><line x1="200" y1="52" x2="189" y2="63"/>
+      </g>
+      <path d="M226 104 Q242 92 258 104" fill="none" stroke="#1f2937" stroke-width="3" stroke-linecap="round"/>
+      <path d="M110 112 L86 132 L188 132 L226 120 L150 110 Z" fill="#cf9e1c" stroke="#1f2937" stroke-width="4" stroke-linejoin="round"/>
+      <line x1="150" y1="128" x2="144" y2="150" stroke="#1f2937" stroke-width="4"/>
+      <circle cx="143" cy="154" r="9" fill="#2b2b2b" stroke="#1f2937" stroke-width="2"/>
+      <circle cx="290" cy="101" r="5" fill="#cc2a2a"/>
+      <path d="M298 74 Q308 102 296 130" fill="none" stroke="#2b2b2b" stroke-width="5" stroke-linecap="round"/>
+    </g>
+  </svg>
+  <div id="endStats"></div>
+  <p id="endPrompt" class="big">TAP TO FLY AGAIN</p>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const startScreen = document.getElementById('startScreen');
+const endScreen = document.getElementById('endScreen');
+const endTitle = document.getElementById('endTitle');
+const crashCauseEl = document.getElementById('crashCause');
+const rewardMsgEl = document.getElementById('rewardMsg');
+const endStatsEl = document.getElementById('endStats');
+const endPromptEl = document.getElementById('endPrompt');
+const artHappy = document.getElementById('artHappy');
+const artCrash = document.getElementById('artCrash');
+let runScoreEl = null, runTotalEl = null;
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+let DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+  W = window.innerWidth;
+  H = window.innerHeight;
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', resize);
+resize();
+
+// ===== Game state =====
+const STATE = { START: 0, PLAY: 1, END: 2, TURN: 3 };
+let state = STATE.START;
+
+// Levels / missions
+let level = 1;
+let totalScore = 0;
+let acresTarget = 10;
+let lastResult = 'crash';   // 'level' | 'retry' | 'gameover'
+let levelScore = 0;
+let swathMult = 1;
+let lives = 3;
+const MAX_LIVES = 3;
+
+// End-of-level "spray turn" maneuver (slow + clean, flies off screen)
+let turnT = 0, turnBaseX = 0, turnBaseY = 0, planeFlip = false;
+const TURN_DUR = 3.0;
+
+// Staged "slot-machine" scorecard reveal
+let cardActive = false, cardT = 0;
+let tallyBase = 0, tallyTarget = 0, tallyPrevTotal = 0, tallyNewTotal = 0;
+
+const plane = {
+  x: 0,        // set on start
+  y: 0,
+  vy: 0,
+  rot: 0,
+};
+
+const world = {
+  scroll: 0,
+  speed: 4.2,
+  groundY: 0,   // baseline ground y in screen coords
+  hills: [],    // terrain segments
+};
+
+let obstacles = [];   // {type, worldX, ...}
+let critters = [];
+let particles = [];   // spray particles
+let stars = [];       // for sky
+let clouds = [];
+
+let score = 0;
+let acresClean = 0;
+let swathAcc = 0;
+let swathBest = 0;
+let groove = 0;       // 0..1
+let inGroove = false;
+let spraying = false;
+let lastTs = 0;
+let touching = false;
+
+// Loop-the-loop (hold the climb long enough and the plane rolls a full loop).
+// NOTE: keep this in mind as a future power-up — e.g. a collectible that grants
+// a free loop with i-frames, or a points multiplier for stylish loops.
+let holdTime = 0;
+let looping = false;
+let loopT = 0;
+let loopEntryY = 0;
+let loopHeight = 0;
+let loopUsedThisHold = false;
+let loopFlashT = 0;
+const LOOP_HOLD = 1.25;   // seconds of continuous climb before a loop kicks in
+const LOOP_DUR = 1.4;     // seconds to complete the loop (longer = more gradual)
+const LOOP_SIZE = 200;    // arc height in px (scaled down if there isn't room)
+
+// Collectibles: bonus points + power-ups parked in hard-to-reach gaps.
+let collectibles = [];    // {type, worldX, y, taken, bob}
+let shield = false;       // absorbs one obstacle/critter hit
+let sprayBoostT = 0;      // seconds of boosted spray remaining
+let multT = 0;            // seconds of score multiplier remaining
+let pickFlashT = 0;       // pickup/flash message timer
+let pickFlashMsg = '';
+const BOOST_DUR = 6;      // spray/hopper boost duration (s)
+const MULT_DUR = 8;       // score multiplier duration (s)
+const MULT_X = 2;         // score multiplier factor
+
+// ===== World generation =====
+function genHills(startX, count) {
+  // returns array of {x, y} terrain anchor points in world space
+  const out = [];
+  let x = startX;
+  let baseY = world.groundY;
+  for (let i = 0; i < count; i++) {
+    const dx = 220 + Math.random() * 180;
+    const wave = Math.sin(x * 0.0015) * 30 + Math.sin(x * 0.004) * 18;
+    const noise = (Math.random() - 0.5) * 24;
+    out.push({ x, y: baseY + wave + noise });
+    x += dx;
+  }
+  return out;
+}
+
+function terrainYatWorldX(wx) {
+  // interpolate between nearest two hills
+  const hs = world.hills;
+  if (!hs.length) return world.groundY;
+  if (wx <= hs[0].x) return hs[0].y;
+  if (wx >= hs[hs.length-1].x) return hs[hs.length-1].y;
+  // binary search
+  let lo = 0, hi = hs.length - 1;
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (hs[mid].x <= wx) lo = mid; else hi = mid;
+  }
+  const a = hs[lo], b = hs[hi];
+  const t = (wx - a.x) / (b.x - a.x);
+  // smooth cosine
+  const ts = (1 - Math.cos(t * Math.PI)) / 2;
+  return a.y * (1 - ts) + b.y * ts;
+}
+
+function spawnObstacleAhead(wx) {
+  const roll = Math.random();
+  if (roll < 0.30) {
+    obstacles.push({ type: 'fence', worldX: wx, hit: false });
+  } else if (roll < 0.58) {
+    obstacles.push({ type: 'powerline', worldX: wx, hit: false, height: 90 + Math.random()*30 });
+  } else if (roll < 0.78) {
+    obstacles.push({ type: 'transmission', worldX: wx, hit: false, height: Math.min(190 + Math.random()*40, world.groundY - 90) });
+  } else if (roll < 0.89) {
+    obstacles.push({ type: 'tree', worldX: wx, hit: false });
+  } else if (roll < 0.96) {
+    critters.push({ type: Math.random() < 0.5 ? 'deer' : 'cow', worldX: wx, hit: false, popT: 0 });
+  } else {
+    // Rare bird up in the sky — fly UNDER it.
+    obstacles.push({ type: 'bird', worldX: wx, hit: false, y: Math.max(72, world.groundY - (150 + Math.random()*90)) });
+  }
+  // Occasionally drop a collectible just past the obstacle, up off the deck.
+  if (Math.random() < 0.38) spawnCollectible(wx + 130 + Math.random() * 110);
+}
+
+function spawnCollectible(wx) {
+  const r = Math.random();
+  let type;
+  if (r < 0.74) type = 'bonus';
+  else if (r < 0.78) type = 'shield';   // shields are rare
+  else if (r < 0.89) type = 'boost';
+  else type = 'mult';
+  const g = terrainYatWorldX(wx);
+  // Bonus points sit low along the spray path; power-ups ride higher (riskier grab).
+  const y = (type === 'bonus')
+    ? g - (32 + Math.random() * 42)
+    : g - (110 + Math.random() * 90);
+  collectibles.push({ type, worldX: wx, y, taken: false, bob: Math.random() * 6.28 });
+}
+
+function resetGame() {
+  state = STATE.PLAY;
+  acresTarget = level * 10;
+  planeFlip = false;
+  cardActive = false;
+  world.scroll = 0;
+  world.groundY = H * 0.78;
+  world.hills = genHills(-400, 80);
+  world.speed = 4.2 + (level - 1) * 0.25;
+
+  plane.x = W * 0.30;
+  plane.y = world.groundY - 220;
+  plane.vy = 0;
+  plane.rot = 0;
+
+  obstacles = [];
+  critters = [];
+  particles = [];
+  score = 0;
+  acresClean = 0;
+  swathAcc = 0;
+  swathBest = 0;
+  groove = 0;
+  inGroove = false;
+  spraying = false;
+  holdTime = 0;
+  looping = false;
+  loopT = 0;
+  loopUsedThisHold = false;
+  loopFlashT = 0;
+  collectibles = [];
+  shield = false;
+  sprayBoostT = 0;
+  multT = 0;
+  pickFlashT = 0;
+
+  // pre-seed obstacles
+  let ox = W + 200;
+  for (let i = 0; i < 14; i++) {
+    spawnObstacleAhead(ox);
+    ox += 280 + Math.random() * 260;
+  }
+
+  // clouds
+  clouds = [];
+  for (let i = 0; i < 6; i++) {
+    clouds.push({
+      x: Math.random() * W,
+      y: 40 + Math.random() * H * 0.25,
+      s: 0.5 + Math.random() * 1.2,
+      v: 0.1 + Math.random() * 0.2
+    });
+  }
+}
+
+// ===== Input =====
+function press(e) {
+  if (e) { e.preventDefault(); }
+  if (state === STATE.START) {
+    startScreen.classList.add('hidden');
+    level = 1; totalScore = 0; lives = MAX_LIVES;
+    resetGame();
+    return;
+  }
+  if (state === STATE.END) {
+    // First tap snaps the staged scorecard to its final state; next tap advances.
+    if (cardActive) {
+      cardActive = false;
+      ['rowAcres','rowBase','rowSwath','rowMult','rowScore','rowTotal'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.classList.remove('hiddenrow');
+      });
+      if (runScoreEl) runScoreEl.textContent = tallyTarget;
+      if (runTotalEl) runTotalEl.textContent = tallyNewTotal;
+      return;
+    }
+    endScreen.classList.add('hidden');
+    if (lastResult === 'level') {
+      level += 1;                                   // next field, bigger goal
+    } else if (lastResult === 'retry') {
+      /* same field again — lives already spent, banked total kept */
+    } else {
+      level = 1; totalScore = 0; lives = MAX_LIVES; // game over — start fresh
+    }
+    resetGame();
+    return;
+  }
+  if (state === STATE.TURN) return;   // ignore taps during the auto spray-turn
+  touching = true;
+}
+function release(e) {
+  if (e) { e.preventDefault(); }
+  touching = false;
+}
+
+// Touch
+canvas.addEventListener('touchstart', press, { passive: false });
+canvas.addEventListener('touchend', release, { passive: false });
+canvas.addEventListener('touchcancel', release, { passive: false });
+// Mouse (desktop testing)
+canvas.addEventListener('mousedown', press);
+canvas.addEventListener('mouseup', release);
+canvas.addEventListener('mouseleave', release);
+// Tap start screen too
+startScreen.addEventListener('touchstart', press, { passive: false });
+startScreen.addEventListener('mousedown', press);
+endScreen.addEventListener('touchstart', press, { passive: false });
+endScreen.addEventListener('mousedown', press);
+// Spacebar for desktop
+window.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); press(); } });
+window.addEventListener('keyup', e => { if (e.code === 'Space') { release(); } });
+
+// ===== Update =====
+function update(dt) {
+  if (state === STATE.TURN) { updateTurn(dt); return; }
+  if (state !== STATE.PLAY) return;
+
+  if (looping) {
+    // Override normal physics: arc up-and-over with a full 360 spin.
+    loopT += dt;
+    const p = Math.min(1, loopT / LOOP_DUR);
+    plane.rot = -p * Math.PI * 2;
+    plane.y = loopEntryY - Math.sin(p * Math.PI) * loopHeight;
+    if (p >= 1) {
+      looping = false;
+      plane.rot = 0;
+      plane.vy = -40;
+      score += 150;
+      groove = Math.min(1, groove + 0.3);
+      loopFlashT = 1.3;
+    }
+  } else {
+    // Plane physics: hold = climb (negative vy), release = sink (positive vy)
+    const climbAccel = -700;   // px/s^2 while holding
+    const gravity = 380;       // px/s^2 while not holding
+    if (touching) {
+      plane.vy += climbAccel * dt;
+      holdTime += dt;
+    } else {
+      plane.vy += gravity * dt;
+      holdTime = 0;
+      loopUsedThisHold = false;
+    }
+    // Damping
+    plane.vy *= 0.985;
+    plane.vy = Math.max(-340, Math.min(340, plane.vy));
+    plane.y += plane.vy * dt;
+    plane.rot = Math.max(-0.4, Math.min(0.4, plane.vy * 0.0015));
+  }
+  if (loopFlashT > 0) loopFlashT -= dt;
+
+  // Scroll world
+  const speedPx = world.speed * 60; // ~252 px/s base
+  world.scroll += speedPx * dt;
+
+  // Generate new hills as needed
+  while (world.hills.length > 0 && world.hills[world.hills.length-1].x < world.scroll + W + 400) {
+    const last = world.hills[world.hills.length-1];
+    const dx = 220 + Math.random() * 180;
+    const wave = Math.sin((last.x + dx) * 0.0015) * 30 + Math.sin((last.x + dx) * 0.004) * 18;
+    const noise = (Math.random() - 0.5) * 24;
+    world.hills.push({ x: last.x + dx, y: world.groundY + wave + noise });
+  }
+  // Trim old hills
+  while (world.hills.length > 2 && world.hills[1].x < world.scroll - 200) {
+    world.hills.shift();
+  }
+
+  // Generate new obstacles
+  const lastObsX = (obstacles.length ? obstacles[obstacles.length-1].worldX : 0);
+  const lastCritX = (critters.length ? critters[critters.length-1].worldX : 0);
+  const lastX = Math.max(lastObsX, lastCritX, world.scroll);
+  if (lastX < world.scroll + W * 2) {
+    spawnObstacleAhead(lastX + 240 + Math.random() * 280);
+  }
+  // Trim old
+  obstacles = obstacles.filter(o => o.worldX > world.scroll - 200);
+  critters = critters.filter(c => c.worldX > world.scroll - 200);
+
+  // Ground at plane.x in world coords
+  const planeWorldX = world.scroll + plane.x;
+  const ground = terrainYatWorldX(planeWorldX);
+
+  // Altitude above ground
+  const altAGL = ground - plane.y;  // positive when plane is above ground
+
+  // Trigger a loop when the player holds the climb long enough with room above the crop.
+  if (!looping && touching && !loopUsedThisHold && holdTime > LOOP_HOLD && altAGL > 130) {
+    looping = true;
+    loopT = 0;
+    loopEntryY = plane.y;
+    loopHeight = Math.min(LOOP_SIZE, plane.y - 40);  // keep the arc on screen
+    loopUsedThisHold = true;
+  }
+
+  // Clamp plane to sky
+  if (plane.y < 30) { plane.y = 30; plane.vy = Math.max(0, plane.vy); }
+
+  // Crash into ground (no crash mid-loop — i-frames)
+  if (!looping && altAGL < 8) {
+    endRun('You hit the ground.');
+    return;
+  }
+
+  // Obstacle collisions (skipped during a loop — i-frames)
+  const px = plane.x;
+  if (!looping) for (const o of obstacles) {
+    if (o.hit) continue;
+    const sx = o.worldX - world.scroll;
+    if (sx < -40 || sx > W + 40) continue;
+    const oGround = terrainYatWorldX(o.worldX);
+    if (o.type === 'fence') {
+      if (Math.abs(sx - px) < 22 && plane.y > oGround - 36) { o.hit = true; if (!consumeShield()) { endRun('You crashed into a fence.'); return; } }
+    } else if (o.type === 'powerline') {
+      // Small distribution lines: must go OVER. Lethal across the whole span between
+      // the poles, so you crash the moment you reach the first pole — not mid-span.
+      if (Math.abs(sx - px) < 92 && plane.y > oGround - o.height) {
+        o.hit = true; if (!consumeShield()) { endRun('You hit a power line.'); return; }
+      }
+    } else if (o.type === 'transmission') {
+      // Wires sit up high — you can duck UNDER them (stay low) or climb OVER.
+      // Lethal only in the wire band, not the full tower.
+      const wireY = oGround - o.height;
+      if (Math.abs(sx - px) < 30 && plane.y > wireY - 8 && plane.y < wireY + 36) {
+        o.hit = true; if (!consumeShield()) { endRun('You hit the high-voltage lines.'); return; }
+      }
+    } else if (o.type === 'tree') {
+      if (Math.abs(sx - px) < 30 && plane.y > oGround - 80) {
+        o.hit = true; if (!consumeShield()) { endRun('You hit a tree.'); return; }
+      }
+    } else if (o.type === 'bird') {
+      if (Math.abs(sx - px) < 22 && Math.abs(plane.y - o.y) < 18) {
+        o.hit = true; if (!consumeShield()) { endRun('You hit a bird.'); return; }
+      }
+    }
+  }
+  for (const c of critters) {
+    const sx = c.worldX - world.scroll;
+    if (sx > -40 && sx < W + 40) c.popT += dt;
+    if (c.hit || looping) continue;
+    const ch = c.type === 'deer' ? 48 : 34;   // collision height to match the animal
+    if (Math.abs(sx - px) < 26 && plane.y > terrainYatWorldX(c.worldX) - ch) {
+      c.hit = true; if (!consumeShield()) { endRun(c.type === 'deer' ? 'Oh no! You hit a deer.' : 'Oh no! You hit a cow.'); return; }
+    }
+  }
+
+  // Collectible pickups + power-up timers
+  for (const c of collectibles) {
+    if (c.taken) continue;
+    const csx = c.worldX - world.scroll;
+    if (Math.abs(csx - plane.x) < 26 && Math.abs(c.y - plane.y) < 26) {
+      c.taken = true;
+      if (c.type === 'bonus') { score += 250; pickFlashT = 1.1; pickFlashMsg = 'BONUS +250'; }
+      else if (c.type === 'shield') { shield = true; pickFlashT = 1.3; pickFlashMsg = 'SHIELD READY'; }
+      else if (c.type === 'boost') { sprayBoostT = BOOST_DUR; pickFlashT = 1.3; pickFlashMsg = 'SPRAY BOOST'; }
+      else if (c.type === 'mult') { multT = MULT_DUR; pickFlashT = 1.3; pickFlashMsg = MULT_X + 'x SCORE'; }
+    }
+  }
+  collectibles = collectibles.filter(c => !c.taken && c.worldX > world.scroll - 200);
+  if (sprayBoostT > 0) sprayBoostT -= dt;
+  if (multT > 0) multT -= dt;
+  if (pickFlashT > 0) pickFlashT -= dt;
+
+  // Spray strength scales with how low you are. Spray stays on from the deck up to a
+  // ceiling set high enough to clear power lines with the spray still flowing; above
+  // that it cuts off and the points stop.
+  const SPRAY_CEIL = 175;   // AGL where the spray finally shuts off
+  let strength = 0;
+  spraying = false;
+  if (altAGL >= 6 && altAGL <= SPRAY_CEIL) {
+    spraying = true;
+    // ~full strength on the deck, fading to a trickle near the ceiling
+    strength = Math.min(1, Math.max(0.15, 1 - (altAGL - 12) / (SPRAY_CEIL - 12)));
+  }
+  let scoreRate = spraying ? (10 + 55 * strength) : 0;
+  if (strength >= 0.7) groove = Math.min(1, groove + dt * 0.5);
+  else groove = Math.max(0, groove - dt * 0.3);
+  // Longest swath = how long the spray stayed on continuously, without a break
+  if (spraying) {
+    swathAcc += dt;
+    swathBest = Math.max(swathBest, swathAcc);
+  } else {
+    swathAcc = 0;
+  }
+  if (groove >= 0.999 && !inGroove) {
+    inGroove = true;
+    world.speed = 5.5;
+  } else if (groove < 0.5 && inGroove) {
+    inGroove = false;
+    world.speed = 4.2 + (level - 1) * 0.25;
+  }
+  const mult = (inGroove ? 1.5 : 1) * (multT > 0 ? MULT_X : 1) * (sprayBoostT > 0 ? 1.6 : 1);
+  score += scoreRate * dt * mult;
+  if (spraying) acresClean += dt * 0.7 * strength * (sprayBoostT > 0 ? 1.5 : 1);
+  if (acresClean >= acresTarget) { startTurn(); return; }
+
+  // Particles — heavier spray the lower (stronger) you are
+  if (spraying) {
+    const boosting = sprayBoostT > 0;
+    const count = Math.max(1, Math.round((boosting ? 5 : 3) * strength));
+    for (let i = 0; i < count; i++) {
+      particles.push({
+        x: plane.x - 14,
+        y: plane.y + 12 + (boosting ? (Math.random() - 0.5) * 10 : 0),
+        vx: -180 - Math.random() * 120,
+        vy: 22 + Math.random() * 26,
+        life: 0.75,
+        max: 0.75,
+        r: (boosting ? 3 : 2) + Math.random() * 2,
+      });
+    }
+  }
+  for (const p of particles) {
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= dt;
+  }
+  particles = particles.filter(p => p.life > 0);
+
+  // Clouds drift
+  for (const c of clouds) {
+    c.x -= c.v * speedPx * dt * 0.05;
+    if (c.x < -100) {
+      c.x = W + Math.random() * 100;
+      c.y = 40 + Math.random() * H * 0.25;
+      c.s = 0.5 + Math.random() * 1.2;
+    }
+  }
+}
+
+// Returns true if a shield absorbed the hit (player survives).
+function consumeShield() {
+  if (shield) {
+    shield = false;
+    pickFlashT = 1.0;
+    pickFlashMsg = 'SHIELD!';
+    return true;
+  }
+  return false;
+}
+
+// Goal reached — fly an automated crop-duster procedure turn, then show the reward.
+function startTurn() {
+  state = STATE.TURN;
+  turnT = 0;
+  turnBaseX = plane.x;
+  turnBaseY = plane.y;
+}
+
+function updateTurn(dt) {
+  turnT += dt;
+  const p = Math.min(1, turnT / TURN_DUR);
+  // world coasts to a gentle stop early in the turn
+  world.scroll += world.speed * 60 * dt * Math.max(0, 1 - p * 2.2);
+  // one clean, gentle climb hump; banks in, levels out
+  plane.y = turnBaseY - Math.sin(p * Math.PI) * 72;
+  if (p < 0.5) {
+    plane.x = turnBaseX + (p / 0.5) * 70;     // ease forward into the turn
+    plane.rot = (p / 0.5) * 0.32;             // bank in
+    planeFlip = false;
+  } else {
+    const q = (p - 0.5) / 0.5;
+    const apexX = turnBaseX + 70;
+    plane.x = apexX - q * (apexX + 140);      // sweep back and off the LEFT edge
+    plane.rot = (1 - q) * -0.32;              // roll level as it leaves
+    planeFlip = true;                         // now headed the other way
+  }
+  // spray stays on through most of the pass, eases off as it exits
+  if (p < 0.82) {
+    spraying = true;
+    for (let i = 0; i < 2; i++) {
+      particles.push({
+        x: plane.x + (planeFlip ? 14 : -14), y: plane.y + 12,
+        vx: (planeFlip ? 1 : -1) * (150 + Math.random() * 110),
+        vy: 22 + Math.random() * 26, life: 0.75, max: 0.75, r: 2 + Math.random() * 2,
+      });
+    }
+  } else { spraying = false; }
+  for (const pt of particles) { pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt; }
+  particles = particles.filter(pt => pt.life > 0);
+  if (p >= 1) completeLevel();
+}
+
+function revealRow(id, after) {
+  if (cardT >= after) { const el = document.getElementById(id); if (el) el.classList.remove('hiddenrow'); }
+}
+
+function completeLevel() {
+  swathMult = 1 + swathBest * 0.1;
+  const base = Math.round(score);
+  levelScore = Math.round(base * swathMult);
+  tallyBase = base;
+  tallyTarget = levelScore;
+  tallyPrevTotal = totalScore;
+  totalScore += levelScore;
+  tallyNewTotal = totalScore;
+  cardT = 0;
+  cardActive = true;
+  lastResult = 'level';
+  state = STATE.END;
+
+  let reward;
+  if (swathMult >= 2.5) reward = 'BEST PILOT EVER!';
+  else if (swathMult >= 2.0) reward = 'ACE DUSTER!';
+  else if (swathMult >= 1.5) reward = 'GREAT JOB!';
+  else reward = 'NICE FLYING!';
+
+  endTitle.textContent = 'FIELD ' + level + ' COMPLETE';
+  rewardMsgEl.textContent = reward;
+  crashCauseEl.textContent = '';
+  artHappy.classList.remove('hidden');
+  artCrash.classList.add('hidden');
+  endStatsEl.innerHTML =
+    '<p id="rowAcres" class="hiddenrow">Acres sprayed: ' + Math.floor(acresClean) + ' / ' + acresTarget + '</p>' +
+    '<p id="rowBase" class="hiddenrow">Base score: ' + base + '</p>' +
+    '<p id="rowSwath" class="hiddenrow">Longest swath: ' + swathBest.toFixed(1) + 's</p>' +
+    '<p id="rowMult" class="hiddenrow">Swath multiplier: <b>' + swathMult.toFixed(1) + '&times;</b></p>' +
+    '<p id="rowScore" class="hiddenrow score-line">Field Score: <span id="runScore">' + base + '</span></p>' +
+    '<p id="rowTotal" class="hiddenrow">Total: <span id="runTotal">' + tallyPrevTotal + '</span></p>';
+  runScoreEl = document.getElementById('runScore');
+  runTotalEl = document.getElementById('runTotal');
+  endPromptEl.textContent = 'TAP FOR FIELD ' + (level + 1) + ' — ' + ((level + 1) * 10) + ' AC';
+  endScreen.classList.remove('hidden');
+}
+
+// Timeline (seconds) for the staged scorecard
+const CARD_ACRES = 0.4, CARD_BASE = 1.2, CARD_SWATH = 2.0, CARD_MULT = 2.8;
+const CARD_SCORE = 3.7, CARD_SCORE_LEN = 1.8;
+const CARD_TOTAL = 5.9, CARD_TOTAL_LEN = 1.3;
+
+function updateCard(dt) {
+  cardT += dt;
+  revealRow('rowAcres', CARD_ACRES);
+  revealRow('rowBase', CARD_BASE);
+  revealRow('rowSwath', CARD_SWATH);
+  revealRow('rowMult', CARD_MULT);
+  if (cardT >= CARD_SCORE) {
+    revealRow('rowScore', CARD_SCORE);
+    const p = Math.min(1, (cardT - CARD_SCORE) / CARD_SCORE_LEN);
+    const e = 1 - Math.pow(1 - p, 3);
+    if (runScoreEl) runScoreEl.textContent = Math.round(tallyBase + (tallyTarget - tallyBase) * e);
+  }
+  if (cardT >= CARD_TOTAL) {
+    revealRow('rowTotal', CARD_TOTAL);
+    const p = Math.min(1, (cardT - CARD_TOTAL) / CARD_TOTAL_LEN);
+    const e = 1 - Math.pow(1 - p, 3);
+    if (runTotalEl) runTotalEl.textContent = Math.round(tallyPrevTotal + (tallyNewTotal - tallyPrevTotal) * e);
+    if (p >= 1) cardActive = false;
+  }
+}
+
+function endRun(cause) {
+  cardActive = false;
+  lives -= 1;
+  lastResult = (lives > 0) ? 'retry' : 'gameover';
+  state = STATE.END;
+  rewardMsgEl.textContent = '';
+  crashCauseEl.textContent = cause || '';
+  artHappy.classList.add('hidden');
+  artCrash.classList.remove('hidden');
+  if (lives > 0) {
+    endTitle.textContent = 'CRASH!';
+    endStatsEl.innerHTML =
+      '<p class="score-line">Lives left: ' + lives + '</p>' +
+      '<p>Acres sprayed: ' + Math.floor(acresClean) + ' / ' + acresTarget + '</p>' +
+      '<p>Longest swath: ' + swathBest.toFixed(1) + 's</p>' +
+      '<p>Banked total: ' + totalScore + '</p>';
+    endPromptEl.textContent = 'TAP TO RETRY FIELD ' + level + ' — ' + lives + ' LEFT';
+  } else {
+    endTitle.textContent = 'GAME OVER';
+    endStatsEl.innerHTML =
+      '<p class="score-line">Final total: ' + totalScore + '</p>' +
+      '<p>Reached Field ' + level + '</p>' +
+      '<p>Longest swath: ' + swathBest.toFixed(1) + 's</p>';
+    endPromptEl.textContent = 'TAP TO START OVER';
+  }
+  endScreen.classList.remove('hidden');
+}
+
+// ===== Render =====
+function draw() {
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#1a2438');
+  sky.addColorStop(0.35, '#3d4a6b');
+  sky.addColorStop(0.65, '#d97757');
+  sky.addColorStop(0.92, '#f4b860');
+  sky.addColorStop(1, '#ffd9a0');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // Sun
+  ctx.save();
+  ctx.globalAlpha = 0.8;
+  const sunX = W * 0.82, sunY = H * 0.45;
+  const g = ctx.createRadialGradient(sunX, sunY, 8, sunX, sunY, 160);
+  g.addColorStop(0, '#fff5d0');
+  g.addColorStop(0.4, 'rgba(255, 209, 102, 0.6)');
+  g.addColorStop(1, 'rgba(255, 209, 102, 0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 24, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff5d0';
+  ctx.fill();
+  ctx.restore();
+
+  // Clouds
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  for (const c of clouds) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, 18 * c.s, 0, Math.PI*2);
+    ctx.arc(c.x + 18*c.s, c.y + 4*c.s, 14*c.s, 0, Math.PI*2);
+    ctx.arc(c.x - 16*c.s, c.y + 6*c.s, 12*c.s, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Far treeline (parallax slow)
+  const farOffset = (world.scroll * 0.15) % 80;
+  ctx.fillStyle = '#1f2a3a';
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.6);
+  for (let x = -80; x <= W + 80; x += 40) {
+    const y = H * 0.6 - 6 - Math.sin((x + farOffset) * 0.04) * 5;
+    ctx.lineTo(x - farOffset, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Mid treeline
+  const midOffset = (world.scroll * 0.4) % 100;
+  ctx.fillStyle = '#1a2618';
+  ctx.beginPath();
+  ctx.moveTo(0, H * 0.66);
+  for (let x = -100; x <= W + 100; x += 30) {
+    const y = H * 0.66 - 10 - Math.sin((x + midOffset) * 0.06) * 7 - (Math.sin((x + midOffset) * 0.12) > 0.5 ? 12 : 0);
+    ctx.lineTo(x - midOffset, y);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Ground (rolling crop)
+  ctx.fillStyle = '#2a4a1c';
+  ctx.beginPath();
+  ctx.moveTo(0, H);
+  const startWx = world.scroll;
+  for (let sx = 0; sx <= W + 4; sx += 6) {
+    const wx = sx + startWx;
+    const gy = terrainYatWorldX(wx);
+    if (sx === 0) ctx.moveTo(sx, gy);
+    else ctx.lineTo(sx, gy);
+  }
+  ctx.lineTo(W, H);
+  ctx.lineTo(0, H);
+  ctx.closePath();
+  ctx.fill();
+
+  // Crop row texture
+  ctx.strokeStyle = '#1a3010';
+  ctx.lineWidth = 1;
+  for (let row = 0; row < 4; row++) {
+    ctx.beginPath();
+    for (let sx = 0; sx <= W + 4; sx += 10) {
+      const wx = sx + startWx;
+      const gy = terrainYatWorldX(wx) + 10 + row * 14;
+      if (sx === 0) ctx.moveTo(sx, gy);
+      else ctx.lineTo(sx, gy);
+    }
+    ctx.stroke();
+  }
+
+  // Obstacles
+  for (const o of obstacles) {
+    const sx = o.worldX - world.scroll;
+    if (sx < -60 || sx > W + 60) continue;
+    const gy = terrainYatWorldX(o.worldX);
+    if (o.type === 'fence') {
+      ctx.strokeStyle = '#5a3a1f';
+      ctx.lineWidth = 2.5;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(sx + i*10 - 15, gy);
+        ctx.lineTo(sx + i*10 - 15, gy - 26);
+        ctx.stroke();
+      }
+      ctx.strokeStyle = '#7a5a3a';
+      ctx.lineWidth = 1.5;
+      for (let h = 1; h < 4; h++) {
+        ctx.beginPath();
+        ctx.moveTo(sx - 20, gy - h*7);
+        ctx.lineTo(sx + 20, gy - h*7);
+        ctx.stroke();
+      }
+    } else if (o.type === 'powerline') {
+      ctx.strokeStyle = '#4a3a2a';
+      ctx.lineWidth = 3;
+      // left pole (off-screen anchor)
+      ctx.beginPath();
+      ctx.moveTo(sx - 90, gy);
+      ctx.lineTo(sx - 90, gy - o.height);
+      ctx.stroke();
+      // right pole
+      ctx.beginPath();
+      ctx.moveTo(sx + 90, gy);
+      ctx.lineTo(sx + 90, gy - o.height);
+      ctx.stroke();
+      // wires
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(sx - 90, gy - o.height + 6);
+      ctx.quadraticCurveTo(sx, gy - o.height + 18, sx + 90, gy - o.height + 6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(sx - 90, gy - o.height + 14);
+      ctx.quadraticCurveTo(sx, gy - o.height + 26, sx + 90, gy - o.height + 14);
+      ctx.stroke();
+    } else if (o.type === 'transmission') {
+      // Two lattice towers spaced apart; fly UNDER the wires between them, or over the top.
+      const topY = gy - o.height;
+      ctx.strokeStyle = '#2a3545';
+      ctx.lineWidth = 2;
+      for (const tx of [sx - 95, sx + 95]) {
+        // splayed legs
+        ctx.beginPath();
+        ctx.moveTo(tx - 11, gy); ctx.lineTo(tx, topY + 34);
+        ctx.moveTo(tx + 11, gy); ctx.lineTo(tx, topY + 34);
+        ctx.stroke();
+        // mast
+        ctx.beginPath();
+        ctx.moveTo(tx, topY + 34); ctx.lineTo(tx, topY);
+        ctx.stroke();
+        // cross arms
+        ctx.beginPath();
+        ctx.moveTo(tx - 24, topY + 6); ctx.lineTo(tx + 24, topY + 6);
+        ctx.moveTo(tx - 19, topY + 19); ctx.lineTo(tx + 19, topY + 19);
+        ctx.stroke();
+        // lattice X-bracing
+        ctx.lineWidth = 1;
+        for (let yy = topY + 34; yy < gy - 8; yy += 24) {
+          ctx.beginPath();
+          ctx.moveTo(tx - 9, yy); ctx.lineTo(tx + 9, Math.min(yy + 24, gy));
+          ctx.moveTo(tx + 9, yy); ctx.lineTo(tx - 9, Math.min(yy + 24, gy));
+          ctx.stroke();
+        }
+        ctx.lineWidth = 2;
+      }
+      // sagging wires spanning the towers
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 1.5;
+      for (const wy of [topY + 6, topY + 19]) {
+        ctx.beginPath();
+        ctx.moveTo(sx - 95, wy);
+        ctx.quadraticCurveTo(sx, wy + 24, sx + 95, wy);
+        ctx.stroke();
+      }
+    } else if (o.type === 'tree') {
+      ctx.fillStyle = '#5a3a1f';
+      ctx.fillRect(sx - 3, gy - 30, 6, 30);
+      ctx.fillStyle = '#1f4a1a';
+      ctx.beginPath();
+      ctx.arc(sx, gy - 50, 28, 0, Math.PI * 2);
+      ctx.arc(sx - 14, gy - 38, 18, 0, Math.PI * 2);
+      ctx.arc(sx + 14, gy - 38, 18, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (o.type === 'bird') {
+      // flapping silhouette up in the sky
+      const flap = Math.sin(world.scroll * 0.06 + o.worldX * 0.5) * 6;
+      ctx.strokeStyle = '#15171c';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx - 15, o.y + flap);
+      ctx.quadraticCurveTo(sx - 7, o.y - 5, sx, o.y);
+      ctx.quadraticCurveTo(sx + 7, o.y - 5, sx + 15, o.y + flap);
+      ctx.stroke();
+      ctx.fillStyle = '#15171c';
+      ctx.beginPath();
+      ctx.ellipse(sx, o.y, 3, 2.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineCap = 'butt';
+    }
+  }
+
+  // Critters
+  for (const c of critters) {
+    const sx = c.worldX - world.scroll;
+    if (sx < -40 || sx > W + 40) continue;
+    const gy = terrainYatWorldX(c.worldX);
+    const pop = Math.min(1, c.popT * 2);
+    const popY = pop * 14;
+    if (c.type === 'deer') {
+      const TAN = '#b07d42', DK = '#5c3d1e';
+      // legs
+      ctx.strokeStyle = TAN;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(sx - 9, gy - 13); ctx.lineTo(sx - 9, gy + 1);
+      ctx.moveTo(sx - 3, gy - 13); ctx.lineTo(sx - 3, gy + 1);
+      ctx.moveTo(sx + 6, gy - 13); ctx.lineTo(sx + 6, gy + 1);
+      ctx.stroke();
+      // body
+      ctx.fillStyle = TAN;
+      ctx.strokeStyle = DK;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(sx, gy - 16, 13, 7, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // white tail
+      ctx.fillStyle = '#f3ead8';
+      ctx.beginPath();
+      ctx.ellipse(sx - 13, gy - 17, 2.5, 4, -0.3, 0, Math.PI*2);
+      ctx.fill();
+      // neck (curves up to the head, lifts with the pop)
+      ctx.strokeStyle = TAN;
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx + 9, gy - 18 - popY * 0.4);
+      ctx.lineTo(sx + 14, gy - 27 - popY);
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+      // head
+      ctx.fillStyle = TAN;
+      ctx.strokeStyle = DK;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(sx + 16, gy - 29 - popY, 5, 4, 0.3, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // ear
+      ctx.beginPath();
+      ctx.moveTo(sx + 13, gy - 31 - popY);
+      ctx.lineTo(sx + 11, gy - 35 - popY);
+      ctx.lineTo(sx + 15, gy - 32 - popY);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // antlers (clean single fork)
+      ctx.strokeStyle = DK;
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx + 17, gy - 32 - popY); ctx.lineTo(sx + 19, gy - 40 - popY);
+      ctx.lineTo(sx + 17, gy - 44 - popY);
+      ctx.moveTo(sx + 19, gy - 40 - popY); ctx.lineTo(sx + 23, gy - 42 - popY);
+      ctx.stroke();
+      ctx.lineCap = 'butt';
+    } else {
+      // Cow — light Holstein body with dark spots, white legs/tail, planted on the ground
+      const CREAM = '#f1ede2';
+      // legs (white, reaching down to the ground so it doesn't float)
+      ctx.strokeStyle = CREAM;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sx - 9, gy - 14); ctx.lineTo(sx - 9, gy + 2);
+      ctx.moveTo(sx + 5, gy - 14); ctx.lineTo(sx + 5, gy + 2);
+      ctx.stroke();
+      // tail (white)
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(sx - 17, gy - 17);
+      ctx.lineTo(sx - 21, gy);
+      ctx.stroke();
+      // body
+      ctx.fillStyle = CREAM;
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.ellipse(sx - 1, gy - 15, 17, 10, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // spots
+      ctx.fillStyle = '#3b2a1c';
+      ctx.beginPath(); ctx.ellipse(sx - 7, gy - 17, 4.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(sx + 6, gy - 12, 3.5, 3, 0, 0, Math.PI*2); ctx.fill();
+      // head
+      ctx.fillStyle = CREAM;
+      ctx.strokeStyle = '#222';
+      ctx.beginPath();
+      ctx.ellipse(sx + 16, gy - 19, 6, 5, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.stroke();
+      // muzzle
+      ctx.fillStyle = '#caa';
+      ctx.beginPath();
+      ctx.ellipse(sx + 20, gy - 17, 3, 2.5, 0, 0, Math.PI*2);
+      ctx.fill();
+      // ear
+      ctx.fillStyle = CREAM;
+      ctx.strokeStyle = '#222';
+      ctx.beginPath();
+      ctx.moveTo(sx + 13, gy - 23);
+      ctx.lineTo(sx + 11, gy - 26);
+      ctx.lineTo(sx + 16, gy - 23);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    }
+  }
+
+  // Spray particles
+  for (const p of particles) {
+    const a = Math.max(0, p.life / p.max);
+    ctx.fillStyle = `rgba(174, 239, 255, ${a * 0.7})`;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // Collectibles
+  for (const c of collectibles) {
+    if (c.taken) continue;
+    const csx = c.worldX - world.scroll;
+    if (csx < -30 || csx > W + 30) continue;
+    const by = c.y + Math.sin(world.scroll * 0.02 + c.bob) * 4;
+    drawCollectible(csx, by, c.type);
+  }
+
+  // Plane
+  drawPlane(plane.x, plane.y, plane.rot, planeFlip);
+
+  // HUD
+  drawHUD();
+
+  // "Job done" banner during the end-of-field spray turn
+  if (state === STATE.TURN) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4caf50';
+    ctx.font = 'bold ' + Math.round(H * 0.075) + 'px Courier New, monospace';
+    ctx.fillText('JOB DONE!', W / 2, H * 0.20);
+    ctx.fillStyle = '#cfe6ff';
+    ctx.font = 'bold ' + Math.round(H * 0.028) + 'px Courier New, monospace';
+    ctx.fillText('Field ' + level + ' sprayed — turning for home', W / 2, H * 0.20 + Math.round(H * 0.05));
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
+  // Loop reward flash
+  if (loopFlashT > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, loopFlashT / 0.6);
+    ctx.fillStyle = '#ffd166';
+    ctx.font = 'bold 26px Courier New, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('NICE LOOP!  +150', W / 2, H * 0.28);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
+  // Pickup / shield flash
+  if (pickFlashT > 0) {
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, pickFlashT / 0.6);
+    ctx.fillStyle = '#aeefff';
+    ctx.font = 'bold 22px Courier New, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(pickFlashMsg, W / 2, H * 0.38);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+}
+
+function drawPlane(x, y, rot, flip) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (flip) ctx.scale(-1, 1);
+  ctx.rotate(rot);
+
+  const YEL = '#f4c430', YELDK = '#cf9e1c', WHT = '#fff7e0', LINE = '#222';
+
+  // Shadow on the ground below the plane
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = '#000';
+  const groundY = terrainYatWorldX(world.scroll + x) - y;
+  ctx.beginPath();
+  ctx.ellipse(0, groundY - 3, 34, 5, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // ---- Tail surfaces (behind fuselage) ----
+  ctx.fillStyle = YEL;
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1.5;
+  // vertical fin
+  ctx.beginPath();
+  ctx.moveTo(-29, -2);
+  ctx.lineTo(-41, -24);
+  ctx.lineTo(-31, -24);
+  ctx.lineTo(-22, -2);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  // horizontal stabilizer
+  ctx.beginPath();
+  ctx.moveTo(-25, -1);
+  ctx.lineTo(-45, -5);
+  ctx.lineTo(-45, -1);
+  ctx.lineTo(-26, 4);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // ---- Fuselage ----
+  ctx.fillStyle = WHT;
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1.6;
+  ctx.beginPath();
+  ctx.moveTo(-30, 0);                     // tail point
+  ctx.quadraticCurveTo(-18, -9, 6, -9);   // top spine
+  ctx.quadraticCurveTo(26, -9, 35, -3);   // taper toward nose
+  ctx.lineTo(37, 3);                      // nose tip
+  ctx.quadraticCurveTo(30, 9, 12, 10);    // belly forward
+  ctx.lineTo(-18, 9);                     // belly aft
+  ctx.quadraticCurveTo(-28, 8, -30, 0);   // back to tail
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // yellow cheat-line along the fuselage
+  ctx.fillStyle = YEL;
+  ctx.beginPath();
+  ctx.moveTo(-28, 3);
+  ctx.quadraticCurveTo(0, 6, 33, 3);
+  ctx.lineTo(34, 6);
+  ctx.quadraticCurveTo(0, 9, -27, 7);
+  ctx.closePath();
+  ctx.fill();
+
+  // ---- Canopy ----
+  ctx.fillStyle = '#bfe8ff';
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(3, -9);
+  ctx.quadraticCurveTo(5, -19, 15, -19);
+  ctx.quadraticCurveTo(23, -19, 23, -9);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.beginPath();
+  ctx.moveTo(7, -10);
+  ctx.quadraticCurveTo(9, -17, 15, -17);
+  ctx.lineTo(11, -10);
+  ctx.closePath();
+  ctx.fill();
+
+  // ---- Engine cowl + spinner ----
+  ctx.fillStyle = YELDK;
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1.4;
+  ctx.beginPath();
+  ctx.moveTo(35, -3); ctx.lineTo(41, -1); ctx.lineTo(41, 6); ctx.lineTo(37, 6);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#cc2a2a';
+  ctx.beginPath();
+  ctx.moveTo(41, 0); ctx.lineTo(47, 2); ctx.lineTo(41, 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // ---- Spinning propeller disc ----
+  ctx.save();
+  ctx.strokeStyle = 'rgba(30,30,30,0.55)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(46, -15); ctx.lineTo(46, 19);
+  ctx.stroke();
+  ctx.globalAlpha = 0.16;
+  ctx.fillStyle = '#222';
+  ctx.beginPath();
+  ctx.ellipse(46, 2, 3, 17, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+
+  // ---- Low wing (edge-on) ----
+  ctx.fillStyle = YEL;
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-6, 8);
+  ctx.lineTo(-23, 12);
+  ctx.lineTo(-25, 14);
+  ctx.lineTo(-4, 13);
+  ctx.lineTo(22, 13);
+  ctx.lineTo(28, 10);
+  ctx.lineTo(9, 8);
+  ctx.closePath();
+  ctx.fill(); ctx.stroke();
+
+  // ---- Spray boom + nozzles ----
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 1.3;
+  ctx.beginPath();
+  ctx.moveTo(-25, 16); ctx.lineTo(26, 16);
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  for (let nx = -21; nx <= 24; nx += 7) {
+    ctx.beginPath();
+    ctx.moveTo(nx, 16); ctx.lineTo(nx, 19);
+    ctx.stroke();
+  }
+
+  // ---- Fixed main gear (yellow to match the plane) ----
+  ctx.strokeStyle = YEL;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(7, 9); ctx.lineTo(11, 18);
+  ctx.stroke();
+  ctx.fillStyle = YEL;
+  ctx.strokeStyle = LINE;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(12, 19, 3.5, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawCollectible(x, y, type) {
+  ctx.save();
+  ctx.translate(x, y);
+  const glow = type === 'bonus' ? '255,209,102'
+             : type === 'shield' ? '120,180,255'
+             : type === 'boost' ? '120,230,150'
+             : '255,150,70';
+  const halo = ctx.createRadialGradient(0, 0, 2, 0, 0, 20);
+  halo.addColorStop(0, `rgba(${glow},0.55)`);
+  halo.addColorStop(1, `rgba(${glow},0)`);
+  ctx.fillStyle = halo;
+  ctx.beginPath(); ctx.arc(0, 0, 20, 0, Math.PI*2); ctx.fill();
+
+  if (type === 'bonus') {
+    ctx.fillStyle = '#ffd166';
+    ctx.strokeStyle = '#a8791a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff8e0';
+    ctx.beginPath(); ctx.arc(-3, -3, 2.5, 0, Math.PI*2); ctx.fill();
+  } else if (type === 'shield') {
+    ctx.fillStyle = '#cfe6ff';
+    ctx.strokeStyle = '#3a6ea5';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, -11); ctx.lineTo(9, -6); ctx.lineTo(9, 3);
+    ctx.quadraticCurveTo(9, 10, 0, 13);
+    ctx.quadraticCurveTo(-9, 10, -9, 3);
+    ctx.lineTo(-9, -6); ctx.closePath();
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, -5); ctx.lineTo(0, 7); ctx.moveTo(-5, 1); ctx.lineTo(5, 1); ctx.stroke();
+  } else if (type === 'boost') {
+    ctx.fillStyle = '#7be08c';
+    ctx.strokeStyle = '#2f8f48';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(0, -11);
+    ctx.quadraticCurveTo(9, 2, 0, 11);
+    ctx.quadraticCurveTo(-9, 2, 0, -11);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.beginPath(); ctx.arc(-2, 2, 2, 0, Math.PI*2); ctx.fill();
+  } else { // mult
+    ctx.fillStyle = '#ff9a44';
+    ctx.strokeStyle = '#b85e15';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.roundRect(-12, -9, 24, 18, 5); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#3a1e00';
+    ctx.font = 'bold 13px Impact, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(MULT_X + 'x', 0, 1);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+  ctx.restore();
+}
+
+function drawHeart(cx, cy, s, color) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + s * 0.9);
+  ctx.bezierCurveTo(cx - s * 1.5, cy - s * 0.3, cx - s * 0.6, cy - s * 1.2, cx, cy - s * 0.35);
+  ctx.bezierCurveTo(cx + s * 0.6, cy - s * 1.2, cx + s * 1.5, cy - s * 0.3, cx, cy + s * 0.9);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawHUD() {
+  // Top bar
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, 0, W, 56);
+  ctx.strokeStyle = 'rgba(136,170,204,0.4)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0, 0, W, 56);
+
+  ctx.fillStyle = '#88aacc';
+  ctx.font = '11px Courier New, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillText('SCORE', 14, 16);
+  ctx.fillStyle = '#ffd166';
+  ctx.font = 'bold 20px Courier New, monospace';
+  ctx.fillText(String(Math.floor(score)).padStart(6, '0'), 14, 40);
+
+  // Groove meter
+  ctx.fillStyle = '#88aacc';
+  ctx.font = '11px Courier New, monospace';
+  ctx.fillText('GROOVE', 130, 16);
+  ctx.strokeStyle = '#88aacc';
+  ctx.strokeRect(130, 22, 140, 14);
+  ctx.fillStyle = inGroove ? '#ffd166' : '#4caf50';
+  ctx.fillRect(132, 24, 136 * groove, 10);
+  if (inGroove) {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px Courier New, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('IN THE GROOVE', 200, 33);
+    ctx.textAlign = 'left';
+  }
+
+  // Spray indicator
+  ctx.fillStyle = '#88aacc';
+  ctx.font = '11px Courier New, monospace';
+  ctx.fillText('SPRAY', 290, 16);
+  ctx.fillStyle = spraying ? '#4caf50' : '#555';
+  ctx.beginPath();
+  ctx.arc(298, 32, 6, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = spraying ? '#4caf50' : '#777';
+  ctx.font = 'bold 11px Courier New, monospace';
+  ctx.fillText(spraying ? 'ON' : 'OFF', 310, 36);
+
+  // Field + acres goal (the mission)
+  ctx.fillStyle = '#88aacc';
+  ctx.font = '11px Courier New, monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('FIELD ' + level + ' · ACRES', W - 14, 16);
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 20px Courier New, monospace';
+  ctx.fillText(Math.floor(acresClean) + ' / ' + acresTarget, W - 14, 40);
+  ctx.textAlign = 'left';
+
+  // Active power-up chips (just below the top bar)
+  let chipX = 14;
+  function chip(label, on, col) {
+    if (!on) return;
+    ctx.font = 'bold 12px Courier New, monospace';
+    ctx.textAlign = 'left';
+    const w = ctx.measureText(label).width + 12;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(chipX, 62, w, 18);
+    ctx.fillStyle = col;
+    ctx.fillText(label, chipX + 6, 75);
+    chipX += w + 8;
+  }
+  chip('SHIELD', shield, '#cfe6ff');
+  chip('BOOST ' + Math.ceil(Math.max(0, sprayBoostT)) + 's', sprayBoostT > 0, '#7be08c');
+  chip(MULT_X + 'x ' + Math.ceil(Math.max(0, multT)) + 's', multT > 0, '#ff9a44');
+
+  // Lives (bottom-left)
+  for (let i = 0; i < MAX_LIVES; i++) {
+    drawHeart(24 + i * 22, H - 24, 8, i < lives ? '#ff5a5a' : 'rgba(255,255,255,0.18)');
+  }
+
+  // Touch indicator (bottom right)
+  if (state === STATE.PLAY) {
+    const tx = W - 60, ty = H - 60;
+    ctx.fillStyle = touching ? 'rgba(76,175,80,0.4)' : 'rgba(255,255,255,0.12)';
+    ctx.beginPath();
+    ctx.arc(tx, ty, 28, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = touching ? '#4caf50' : '#888';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(tx, ty, 28, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px Courier New, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(touching ? 'CLIMB' : 'HOLD', tx, ty + 3);
+    ctx.textAlign = 'left';
+  }
+}
+
+// ===== Main loop =====
+function loop(ts) {
+  if (!lastTs) lastTs = ts;
+  let dt = Math.min(0.05, (ts - lastTs) / 1000);
+  lastTs = ts;
+  update(dt);
+  draw();
+  // Staged scorecard reveal + run-up
+  if (cardActive) updateCard(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// Pre-fill background while on start screen
+world.groundY = H * 0.78;
+world.hills = genHills(-400, 60);
+for (let i = 0; i < 6; i++) {
+  clouds.push({ x: Math.random() * W, y: 40 + Math.random() * H * 0.25, s: 0.5 + Math.random() * 1.2, v: 0.1 + Math.random() * 0.2 });
+}
+plane.x = W * 0.30;
+plane.y = world.groundY - 220;
+
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
